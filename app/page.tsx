@@ -430,13 +430,13 @@ export default function CheckPage() {
             <div
               key={check.id}
               className={`
-                bg-white rounded-lg shadow-sm border p-6 transition-all duration-200
-                ${check.status === 'pending' && !isChecking ? 'border-gray-200' : ''}
-                ${check.status === 'checking' ? 'border-blue-200 bg-blue-50' : ''}
-                ${check.status === 'success' ? 'border-green-200 bg-green-50' : ''}
-                ${check.status === 'warning' ? 'border-yellow-200 bg-yellow-50' : ''}
-                ${check.status === 'error' ? 'border-red-200 bg-red-50' : ''}
-              `}
+                  bg-white rounded-lg shadow-sm border p-6 transition-all duration-200
+                  ${check.status === 'pending' && !isChecking ? 'border-gray-200' : ''}
+                  ${check.status === 'checking' ? 'border-blue-200 bg-blue-50' : ''}
+                  ${check.status === 'success' ? 'border-green-200 bg-green-50' : ''}
+                  ${check.status === 'warning' ? 'border-yellow-200 bg-yellow-50' : ''}
+                  ${check.status === 'error' ? 'border-red-200 bg-red-50' : ''}
+                `}
             >
               <div className="space-y-4">
                 <div className="flex items-start gap-4">
