@@ -1,49 +1,46 @@
-// src/utils/securityChecks.ts
-export type SecurityStatus = 'pending' | 'checking' | 'success' | 'warning' | 'error';
+import { ReactNode } from 'react';
 
-export interface SecurityCheckResult {
-  status: SecurityStatus;
+export interface SecurityResult {
+  status: 'secure' | 'warning' | 'danger' | 'pending' | 'checking';
+  message: string;
   details: string;
+  recommendation?: string;
+  learnMore?: string;
   risk?: string;
   impact?: string;
-  recommendations?: {
+  solution?: {
     text: string;
     links: Array<{ name: string; url: string }>;
   };
 }
 
-// HTTPS Check
-export const checkHTTPS = (): SecurityCheckResult => {
-  const isSecure = window.location.protocol === 'https:';
-  return {
-    status: isSecure ? 'success' : 'warning',
-    details: isSecure ? 'Your connection is secure' : 'Your connection is not using HTTPS',
-    risk: isSecure ? undefined : 'Your connection is not encrypted',
-    impact: isSecure ? undefined : 'Data could be intercepted by attackers',
-    recommendations: isSecure
-      ? undefined
-      : {
-          text: 'Use HTTPS whenever possible',
-          links: [{ name: 'HTTPS Everywhere', url: 'https://www.eff.org/https-everywhere' }],
-        },
-  };
-};
+export const checkHTTPS = async (): Promise<SecurityResult> => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  const isHttps = window.location.protocol === 'https:';
 
-// WebRTC Check
-export const checkWebRTC = (): SecurityCheckResult => {
-  const hasWebRTC = !!(window.RTCPeerConnection || (window as any).webkitRTCPeerConnection);
   return {
-    status: hasWebRTC ? 'warning' : 'success',
-    details: hasWebRTC ? 'WebRTC is enabled' : 'WebRTC is not enabled',
-    risk: hasWebRTC ? 'Your real IP address might be exposed' : undefined,
-    impact: hasWebRTC ? 'Your location could be revealed even when using a VPN' : undefined,
-    recommendations: hasWebRTC
+    status: isHttps ? 'secure' : 'warning',
+    message: isHttps ? 'HTTPS Connection Secure' : 'Not Using HTTPS',
+    details: isHttps
+      ? 'Your connection is encrypted and secure'
+      : 'Your connection is not using HTTPS encryption',
+    risk: !isHttps
+      ? 'Unencrypted connections can be intercepted by attackers'
+      : undefined,
+    impact: !isHttps
+      ? 'Your data could be viewed or modified by malicious actors'
+      : undefined,
+    solution: !isHttps
       ? {
-          text: 'Disable WebRTC or use protection',
+          text: 'Use HTTPS Everywhere extension or a secure browser',
           links: [
             {
-              name: 'WebRTC Blocker',
-              url: 'https://chrome.google.com/webstore/detail/webrtc-leak-prevent/',
+              name: 'HTTPS Everywhere',
+              url: 'https://www.eff.org/https-everywhere',
+            },
+            {
+              name: 'Secure Browser Guide',
+              url: 'https://www.privacyguides.org/browsers/',
             },
           ],
         }
@@ -51,53 +48,80 @@ export const checkWebRTC = (): SecurityCheckResult => {
   };
 };
 
-// Cookie Security Check
-export const checkCookies = (): SecurityCheckResult => {
-  const cookiesEnabled = navigator.cookieEnabled;
-  const cookieCount = document.cookie.split(';').filter(Boolean).length;
-
+export const checkWebRTC = async (): Promise<SecurityResult> => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   return {
-    status: cookieCount === 0 ? 'success' : 'warning',
-    details: `Found ${cookieCount} cookies`,
-    risk: cookieCount > 0 ? 'Cookies can be used to track your activity' : undefined,
-    impact: cookieCount > 0 ? 'Your browsing behavior can be tracked across sites' : undefined,
-    recommendations:
-      cookieCount > 0
-        ? {
-            text: 'Manage your cookies and use protection',
-            links: [
-              {
-                name: 'Cookie AutoDelete',
-                url: 'https://chrome.google.com/webstore/detail/cookie-autodelete/',
-              },
-            ],
-          }
-        : undefined,
+    status: 'warning',
+    message: 'WebRTC Leak Possible',
+    details: 'WebRTC could leak your real IP address',
+    risk: 'Your real IP address might be exposed even when using a VPN',
+    impact: 'Your actual location could be revealed during video/audio calls',
+    solution: {
+      text: 'Disable WebRTC or use protection',
+      links: [
+        {
+          name: 'WebRTC Blocker',
+          url: 'https://chrome.google.com/webstore/detail/webrtc-leak-prevent',
+        },
+        { name: 'Privacy Guide', url: 'https://privacyguides.org' },
+      ],
+    },
   };
 };
 
-// Browser Fingerprinting Check
-export const checkFingerprinting = (): SecurityCheckResult => {
-  const canvas = document.createElement('canvas');
-  const hasCanvas = !!canvas.getContext('2d');
-  const hasWebGL = !!canvas.getContext('webgl');
-  const audioContext = window.AudioContext || (window as any).webkitAudioContext;
-  const vulnerabilities = [hasCanvas, hasWebGL, !!audioContext].filter(Boolean).length;
-
+export const checkBrowserFingerprint = async (): Promise<SecurityResult> => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   return {
-    status: vulnerabilities === 0 ? 'success' : vulnerabilities < 2 ? 'warning' : 'error',
-    details: `${vulnerabilities} fingerprinting vectors detected`,
-    risk: vulnerabilities > 0 ? 'Your browser can be uniquely identified' : undefined,
-    impact: vulnerabilities > 0 ? 'You can be tracked across different sessions' : undefined,
-    recommendations:
-      vulnerabilities > 0
-        ? {
-            text: 'Use anti-fingerprinting protection',
-            links: [
-              { name: 'Firefox Privacy Settings', url: 'https://www.mozilla.org/firefox/privacy/' },
-              { name: 'Brave Browser', url: 'https://brave.com' },
-            ],
-          }
-        : undefined,
+    status: 'warning',
+    message: 'Browser Fingerprinting Possible',
+    details: 'Your browser can be uniquely identified',
+    risk: 'Websites can track you across different sessions',
+    impact: 'Your browsing activities can be linked together',
+    solution: {
+      text: 'Use anti-fingerprinting protection',
+      links: [
+        { name: 'Firefox', url: 'https://www.mozilla.org/firefox/' },
+        { name: 'Brave', url: 'https://brave.com' },
+      ],
+    },
+  };
+};
+
+export const checkCookies = async (): Promise<SecurityResult> => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return {
+    status: 'warning',
+    message: 'Cookie Security Issues',
+    details: 'Third-party cookies are enabled',
+    risk: 'Tracking cookies can monitor your browsing habits',
+    impact: 'Your online activities can be tracked across websites',
+    solution: {
+      text: 'Adjust cookie settings and use protection',
+      links: [
+        {
+          name: 'Cookie AutoDelete',
+          url: 'https://chrome.google.com/webstore/detail/cookie-autodelete',
+        },
+        { name: 'Privacy Badger', url: 'https://privacybadger.org/' },
+      ],
+    },
+  };
+};
+
+export const checkDNS = async (): Promise<SecurityResult> => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return {
+    status: 'warning',
+    message: 'DNS Not Encrypted',
+    details: 'Using standard DNS',
+    risk: 'Your DNS queries are not encrypted',
+    impact: 'Your ISP can see which websites you visit',
+    solution: {
+      text: 'Use encrypted DNS',
+      links: [
+        { name: 'Cloudflare 1.1.1.1', url: 'https://1.1.1.1' },
+        { name: 'NextDNS', url: 'https://nextdns.io' },
+      ],
+    },
   };
 };
